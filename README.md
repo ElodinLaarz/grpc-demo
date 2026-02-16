@@ -22,6 +22,21 @@ This project implements a simple "Greeting Service" where a client sends a name 
 - Protocol Buffers compiler (`protoc`)
 - Make (optional, for ease of use)
 
+## Setup
+
+1.  Clone the repository:
+    ```bash
+    git clone https://github.com/ElodinLaarz/grpc-demo.git
+    cd grpc-demo
+    ```
+
+2.  Install dependencies:
+    ```bash
+    go mod tidy
+    ```
+
+**Note:** All commands below should be run from the root of the project directory (`grpc-demo/`).
+
 ## Quick Start
 
 The easiest way to run everything is using the `Makefile`.
@@ -35,6 +50,7 @@ make test
 ### 2. Run Server & Client
 
 **Terminal 1 (Server):**
+Start the server. It will listen on `localhost:50051`.
 ```bash
 make server
 # OR
@@ -42,6 +58,7 @@ go run cmd/server/main.go
 ```
 
 **Terminal 2 (Client):**
+Run the client to send requests to the server.
 ```bash
 make client
 # OR
@@ -74,8 +91,12 @@ See `internal/server/server_test.go` for the implementation.
 
 ## Regenerating Proto Files
 
-If you modify `proto/greeting.proto`, regenerate the Go code:
+If you modify `proto/greeting.proto`, regenerate the Go code from the project root:
 
 ```bash
 make proto
+# OR
+protoc --go_out=. --go_opt=paths=source_relative \
+    --go-grpc_out=. --go-grpc_opt=paths=source_relative \
+    proto/greeting.proto
 ```
