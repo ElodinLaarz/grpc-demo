@@ -58,7 +58,7 @@ go run cmd/server/main.go
 ```
 
 **Terminal 2 (Client):**
-Run the client to send requests to the server.
+Run the client to send requests to the server. The client will run indefinitely, sending a request every 3 seconds.
 ```bash
 make client
 # OR

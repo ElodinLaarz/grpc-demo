@@ -29,26 +29,28 @@ func main() {
 	// Create a client
 	c := pb.NewGreetingServiceClient(conn)
 
-	// Create a context with timeout
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
 	// Make multiple calls to demonstrate the demo
-	names := []string{"Alice", "Bob", "Charlie"}
+	names := []string{"Alice", "Bob", "Charlie", "Dave", "Eve"}
 	
-	for _, name := range names {
-		log.Printf("Requesting greeting for: %s", name)
-		
-		r, err := c.SayHello(ctx, &pb.HelloRequest{Name: name})
-		if err != nil {
-			log.Fatalf("Failed to call SayHello: %v", err)
+	// Loop indefinitely
+	for {
+		for _, name := range names {
+			// Create a context with timeout for this request
+			ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+			
+			log.Printf("Requesting greeting for: %s", name)
+			
+			r, err := c.SayHello(ctx, &pb.HelloRequest{Name: name})
+			if err != nil {
+				log.Printf("Failed to call SayHello: %v", err)
+			} else {
+				log.Printf("Greeting: %s", r.GetMessage())
+			}
+			
+			cancel()
+			
+			// Sleep 3 seconds between requests
+			time.Sleep(3 * time.Second)
 		}
-		
-		log.Printf("Greeting: %s", r.GetMessage())
-		
-		// Small delay between requests
-		time.Sleep(500 * time.Millisecond)
 	}
-	
-	log.Printf("All requests completed successfully")
 }
