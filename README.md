@@ -1,92 +1,81 @@
 # grpc-demo
 
-Simple demo of creating a gRPC service in Golang. This demo demonstrates a basic client-server architecture where a client sends greeting requests to a server, and the server responds with greeting messages. Logs are displayed on both sides to show the communication flow.
+A robust gRPC service demo in Go, demonstrating best practices for structure, validation, and testing.
+
+This project implements a simple "Greeting Service" where a client sends a name and the server responds with a greeting. It goes beyond "Hello World" by including input validation and a full integration test suite.
 
 ## Architecture
 
-- **Proto Definition**: `proto/greeting.proto` - Defines the gRPC service with a `SayHello` RPC method
-- **Server**: `server.go` - Implements the gRPC server that listens on port 50051
-- **Client**: `client.go` - Implements the gRPC client that sends requests to the server
+- **Proto Definition**: `proto/greeting.proto`
+    - Defines the `GreetingService` with a `SayHello` RPC.
+- **Server**: `internal/server` & `cmd/server`
+    - Implements the server logic with input validation.
+    - Returns `InvalidArgument` if the name is empty.
+- **Client**: `cmd/client`
+    - Connects to the server and sends a sequence of requests.
+- **Testing**: `internal/server/server_test.go`
+    - Uses `bufconn` (in-memory connection) to run full end-to-end integration tests without network ports.
 
 ## Prerequisites
 
 - Go 1.24 or later
-- Protocol Buffers compiler (protoc)
+- Protocol Buffers compiler (`protoc`)
+- Make (optional, for ease of use)
 
-## Setup
+## Quick Start
 
-1. Clone the repository:
+The easiest way to run everything is using the `Makefile`.
+
+### 1. Run Tests
+Run the comprehensive test suite (Unit + Integration):
 ```bash
-git clone https://github.com/ElodinLaarz/grpc-demo.git
-cd grpc-demo
+make test
 ```
 
-2. Install dependencies:
+### 2. Run Server & Client
+
+**Terminal 1 (Server):**
 ```bash
-go mod download
+make server
+# OR
+go run cmd/server/main.go
 ```
 
-## Running the Demo
-
-### Terminal 1: Start the Server
-
+**Terminal 2 (Client):**
 ```bash
-go run server.go
+make client
+# OR
+go run cmd/client/main.go
 ```
 
-You should see output like:
+## Project Structure
+
 ```
-2024/02/16 12:00:00 Server starting on port :50051...
+.
+├── cmd/
+│   ├── client/    # Client entry point
+│   └── server/    # Server entry point
+├── internal/
+│   └── server/    # Server implementation & Tests
+├── proto/         # Protocol Buffer definitions
+├── Makefile       # Build & Run automation
+└── README.md
 ```
 
-### Terminal 2: Run the Client
+## Testing Strategy
 
-In a separate terminal, run:
+This project uses **in-memory integration testing** for the gRPC service.
 
-```bash
-go run client.go
-```
+Instead of spinning up a server on a real TCP port (which can be flaky or conflict with other services), we use `google.golang.org/grpc/test/bufconn`. This creates an in-memory network listener that the client can dial directly.
 
-You should see output like:
-```
-2024/02/16 12:00:01 Connecting to server at localhost:50051...
-2024/02/16 12:00:01 Connected to server successfully
-2024/02/16 12:00:01 Sending request to server: name=Alice
-2024/02/16 12:00:01 Received response from server: message=Hello, Alice!
-2024/02/16 12:00:01 Sending request to server: name=Bob
-2024/02/16 12:00:01 Received response from server: message=Hello, Bob!
-2024/02/16 12:00:01 Sending request to server: name=Charlie
-2024/02/16 12:00:01 Received response from server: message=Hello, Charlie!
-2024/02/16 12:00:02 All requests completed successfully
-```
+This approach allows us to test the *entire* stack (interceptor chain, serialization, handler logic) safely and quickly.
 
-The server terminal will show corresponding logs:
-```
-2024/02/16 12:00:01 Received request from client: name=Alice
-2024/02/16 12:00:01 Sending response to client: message=Hello, Alice!
-2024/02/16 12:00:01 Received request from client: name=Bob
-2024/02/16 12:00:01 Sending response to client: message=Hello, Bob!
-2024/02/16 12:00:01 Received request from client: name=Charlie
-2024/02/16 12:00:01 Sending response to client: message=Hello, Charlie!
-```
+See `internal/server/server_test.go` for the implementation.
 
 ## Regenerating Proto Files
 
-If you modify the proto definition, regenerate the Go code:
+If you modify `proto/greeting.proto`, regenerate the Go code:
 
 ```bash
-protoc --go_out=. --go_opt=paths=source_relative \
-    --go-grpc_out=. --go-grpc_opt=paths=source_relative \
-    proto/greeting.proto
+make proto
 ```
-
-## What's Happening
-
-1. The **server** starts and listens on port 50051
-2. The **client** connects to the server
-3. The client sends three greeting requests (for Alice, Bob, and Charlie)
-4. The server receives each request, logs it, creates a response, and sends it back
-5. The client receives each response and logs it
-6. Both sides show detailed logs of the message exchange
-
-This demonstrates the basic gRPC request-response pattern with full visibility into the communication flow.
