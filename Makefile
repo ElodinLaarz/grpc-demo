@@ -1,4 +1,4 @@
-.PHONY: all proto server client clean
+.PHONY: all proto server client test clean
 
 # Default target
 all: proto
@@ -11,11 +11,15 @@ proto:
 
 # Run server
 server:
-	go run server.go
+	go run cmd/server/main.go
 
 # Run client
 client:
-	go run client.go
+	go run cmd/client/main.go
+
+# Run tests
+test:
+	go test -v ./...
 
 # Clean generated files
 clean:

@@ -37,14 +37,14 @@ func main() {
 	names := []string{"Alice", "Bob", "Charlie"}
 	
 	for _, name := range names {
-		log.Printf("Sending request to server: name=%s", name)
+		log.Printf("Requesting greeting for: %s", name)
 		
 		r, err := c.SayHello(ctx, &pb.HelloRequest{Name: name})
 		if err != nil {
 			log.Fatalf("Failed to call SayHello: %v", err)
 		}
 		
-		log.Printf("Received response from server: message=%s", r.GetMessage())
+		log.Printf("Greeting: %s", r.GetMessage())
 		
 		// Small delay between requests
 		time.Sleep(500 * time.Millisecond)
